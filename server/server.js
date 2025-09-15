@@ -53,7 +53,7 @@ const categoryMap = {
   sweets: "Food",
   cool: "Cafe",
   nursing: "Hospital",
-  JAR: "Savings",
+  Jar: "Savings",
 };
 
 function detectCategory(vendor) {
@@ -210,4 +210,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`Server running on port http://localhost:${PORT}`)
 );
+
 

@@ -53,7 +53,7 @@ const categoryMap = {
   sweets: "Food",
   cool: "Cafe",
   nursing: "Hospital",
-  JAR: "Savings",
+  Automatic: "Savings",
 };
 
 function detectCategory(vendor) {

@@ -126,7 +126,7 @@ button:focus-visible {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 425px) {
   table th,
   table td {
     font-size: 12px;
@@ -135,6 +135,19 @@ button:focus-visible {
 
   .total-spent {
     font-size: 1.2rem;
+  }
+
+  .text-2xl.font-bold.mb-4 {
+    font-size: 2.5rem;
+  }
+
+  button {
+    margin-top: 15px;
+    margin-left: 8px !important;
+    padding: 3px !important;
+    border-radius: 6px !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
   }
 }
 

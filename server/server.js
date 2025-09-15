@@ -53,7 +53,7 @@ const categoryMap = {
   sweets: "Food",
   cool: "Cafe",
   nursing: "Hospital",
-  Jar: "Savings",
+  JAR: "Savings",
 };
 
 function detectCategory(vendor) {
@@ -163,6 +163,7 @@ app.post("/api/parse", upload.single("pdf"), async (req, res) => {
           else if (tagLine.includes("services")) category = "Services";
           else if (tagLine.includes("miscellaneous")) category = "Miscellaneous";
           else if (tagLine.includes("transfer")) category = "Transfers";
+          else if (tagLine.includes("savings")) category = "Savings";
         }
          
         if (sign === "-") {
@@ -210,5 +211,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`Server running on port http://localhost:${PORT}`)
 );
-
-

@@ -69,3 +69,72 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Container fixes */
+#root {
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+  padding: 1rem;
+}
+
+/* Upload section (input + button side by side, stack on mobile) */
+.upload-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Table wrapper */
+.table-container {
+  overflow-x: auto; /* 👈 allows horizontal scroll on mobile */
+  margin-top: 20px;
+}
+
+/* Totals center text */
+.total-spent {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 1rem 0;
+  color: #1d4ed8; /* blue */
+}
+
+/* Responsive rules */
+@media (max-width: 768px) {
+  #root {
+    padding: 0.5rem;
+  }
+
+  .upload-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .upload-section input,
+  .upload-section button {
+    width: 100%;
+  }
+
+  table th,
+  table td {
+    font-size: 14px;
+    padding: 6px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  table th,
+  table td {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  .total-spent {
+    font-size: 1.2rem;
+  }
+}
+

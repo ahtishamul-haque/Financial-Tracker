@@ -54,6 +54,12 @@ const categoryMap = {
   cool: "Cafe",
   nursing: "Hospital",
   Automatic: "Savings",
+  Jar: "Savings",
+  Payment: "Savings",
+  Paytm: "Wallet Top-up",
+  PhonePe: "Wallet Top-up",
+  GooglePay: "Wallet Top-up",
+  Cash: "Cash",
 };
 
 function detectCategory(vendor) {

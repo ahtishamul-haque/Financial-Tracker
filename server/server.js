@@ -141,7 +141,7 @@ app.post("/api/parse", upload.single("pdf"), async (req, res) => {
         currentVendor = line.replace(/^(Paid to|Money sent to|Received from)\s*/i, "").trim();
       }
       // If line looks like a direct expense description
-      else if (/^(Paytm|Recharge|Purchase|Bill|Shopping|Bus|Train|Flight|Movie|Electricity|Water|Jio|Airtel|VI)/i.test(line)) {
+      else if (/^(Paytm|Recharge|Automatic|JAR|PhonePe|Amazon|Purchase|Bill|Shopping|Bus|Train|Flight|Movie|Electricity|Water|Jio|Airtel|VI)/i.test(line)) {
       currentVendor = line.trim();
       }
 
@@ -209,6 +209,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`Server running on port http://localhost:${PORT}`)
 );
-
-
-

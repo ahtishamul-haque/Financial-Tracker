@@ -53,7 +53,7 @@ function Charts({ transactions }) {
   }));
 
   // Small slice adjustment
-  const MIN_PERCENTAGE = 0.10; // 5% minimum visual size
+  const MIN_PERCENTAGE = 0.05; // 5% minimum visual size
   const total = pieData.reduce((sum, d) => sum + d.value, 0);
 
   const adjustedPieData = pieData.map((d) => {
@@ -136,4 +136,5 @@ function Charts({ transactions }) {
 }
 
 export default Charts;
+
 

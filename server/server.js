@@ -35,11 +35,12 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
 const categoryMap = {
   myntra: "Shopping",
   amazon: "Shopping",
-  jio: "Bill",
+  jio: "Bill Payments",
   flipkart: "Shopping",
   swiggy: "Food",
   zomato: "Food",
-  blinkit: "Groceries",
+  blinkit: "Blinkit",
+  travel: "Travel",
   bigbasket: "Groceries",
   ola: "Travel",
   dairy: "Groceries",
@@ -60,6 +61,7 @@ const categoryMap = {
   PhonePe: "Wallet Top-up",
   GooglePay: "Wallet Top-up",
   Cash: "Cash",
+  medical: "Medical",
 };
 
 function detectCategory(vendor) {
@@ -67,7 +69,7 @@ function detectCategory(vendor) {
   for (const key in categoryMap) {
     if (lower.includes(key)) return categoryMap[key];
   }
-  return "Other";
+  return "Miscellaneous";
 }
 
 // Helper to extract date (walk back a few lines)
@@ -217,3 +219,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`Server running on port http://localhost:${PORT}`)
 );
+

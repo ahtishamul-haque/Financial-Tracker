@@ -165,7 +165,6 @@ const categoryMap = {
   aiims: "Medical",
   medplus: "Medical",
   pharmeasy: "Medical",
-  1mg: "Medical",
   netmeds: "Medical",
   pharmacy: "Medical",
   medical: "Medical",
@@ -337,5 +336,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`Server running on port http://localhost:${PORT}`)
 );
+
 
 

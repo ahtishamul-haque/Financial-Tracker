@@ -21,153 +21,17 @@ function Charts({ transactions }) {
       </p>
     );
 
-  // 🆕 Category merge mapping
+  // Category mapping
   const mergedCategories = {
-  myntra: "Shopping",
-  amazon: "Shopping",
-  flipkart: "Shopping",
-  ajio: "Shopping",
-  meesho: "Shopping",
-  reliance: "Shopping",
-  shopperstop: "Shopping",
-  nykaa: "Shopping",
-  tatacliq: "Shopping",
-  paytmMall: "Shopping",
-  snapdeal: "Shopping",
-  firstcry: "Shopping",
-  decathlon: "Shopping",
-  lifestyle: "Shopping",
-  maxfashion: "Shopping",
-  pepperfry: "Shopping",
-  ikea: "Shopping",
-
-  // 🍔 Food & Cafe
-  swiggy: "Food",
-  zomato: "Food",
-  dominos: "Food",
-  pizzaHut: "Food",
-  kfc: "Food",
-  mcdonalds: "Food",
-  burgerking: "Food",
-  subway: "Food",
-  bbq: "Food",
-  eatfit: "Food",
-  cafe: "Cafe",
-  starbucks: "Cafe",
-  barista: "Cafe",
-  costa: "Cafe",
-  chaayos: "Cafe",
-  cool: "Cafe",
-  sweets: "Food",
-  
-  // 🥦 Groceries
-  blinkit: "Groceries",
-  bigbasket: "Groceries",
-  grofers: "Groceries",
-  dmart: "Groceries",
-  reliancefresh: "Groceries",
-  more: "Groceries",
-  spencers: "Groceries",
-  naturebasket: "Groceries",
-  dairy: "Groceries",
-  groceries: "Groceries",
-
-  // 🚖 Travel
-  ola: "Travel",
-  uber: "Travel",
-  redbus: "Travel",
-  irctc: "Travel",
-  yatra: "Travel",
-  makemytrip: "Travel",
-  cleartrip: "Travel",
-  ixigo: "Travel",
-  goibibo: "Travel",
-  indigo: "Travel",
-  spicejet: "Travel",
-  airindia: "Travel",
-  vistara: "Travel",
-  travel: "Travel",
-
-  // 💡 Bills & Utilities
-  jio: "Bill Payments",
-  airtel: "Bill Payments",
-  vodafone: "Bill Payments",
-  idea: "Bill Payments",
-  bsnl: "Bill Payments",
-  electricity: "Bill Payments",
-  gas: "Bill Payments",
-  water: "Bill Payments",
-  tataPower: "Bill Payments",
-  adanipower: "Bill Payments",
-  mseb: "Bill Payments",
-
-  // 🎬 Entertainment
-  hudle: "Entertainment",
-  bookmyshow: "Entertainment",
-  hotstar: "Entertainment",
-  netflix: "Entertainment",
-  sony: "Entertainment",
-  prime: "Entertainment",
-  zee: "Entertainment",
-  voot: "Entertainment",
-  sunNxt: "Entertainment",
-  erosnow: "Entertainment",
-  gaana: "Entertainment",
-  spotify: "Entertainment",
-  wynk: "Entertainment",
-  youtube: "Entertainment",
-  
-  // 🏦 Wallets / Banks
-  bank: "Wallet Top-up",
-  icici: "Wallet Top-up",
-  sbi: "Wallet Top-up",
-  hdfc: "Wallet Top-up",
-  axis: "Wallet Top-up",
-  kotak: "Wallet Top-up",
-  yesbank: "Wallet Top-up",
-  idfc: "Wallet Top-up",
-  federal: "Wallet Top-up",
-  bob: "Wallet Top-up",
-  paytm: "Wallet Top-up",
-  phonepe: "Wallet Top-up",
-  googlepay: "Wallet Top-up",
-  freecharge: "Wallet Top-up",
-  mobikwik: "Wallet Top-up",
-
-  // 💰 Savings & Investments
-  jar: "Savings",
-  automatic: "Savings",
-  payment: "Savings",
-  sip: "Investments",
-  mutualfund: "Investments",
-  zerodha: "Investments",
-  groww: "Investments",
-  upstox: "Investments",
-  sharekhan: "Investments",
-
-  // 💊 Medical & Health
-  nursing: "Hospital",
-  hospital: "Medical",
-  apollo: "Medical",
-  fortis: "Medical",
-  max: "Medical",
-  aiims: "Medical",
-  medplus: "Medical",
-  pharmeasy: "Medical",
-  netmeds: "Medical",
-  pharmacy: "Medical",
-  medical: "Medical",
-  
-  // 💵 Misc
-  cash: "Cash",
-  recharge: "Recharges",
-  dth: "Recharges",
-  fastag: "Toll/Transport",
-  insurance: "Insurance",
-  lic: "Insurance",
-  bajaj: "Insurance",
-  tataAig: "Insurance",
-  iciciPrudential: "Insurance",
+    groceries: "Essentials",
+    food: "Essentials",
+    shopping: "Shopping",
+    travel: "Travel",
+    bills: "Bills",
+    entertainment: "Entertainment",
+    medical: "Medical",
+    services: "Services",
+    other: "Other",
   };
 
   const normalizeCategory = (cat) => {
@@ -182,10 +46,22 @@ function Charts({ transactions }) {
     acc[cat] = (acc[cat] || 0) + t.amount;
     return acc;
   }, {});
+
   const pieData = Object.keys(categoryTotals).map((cat) => ({
     name: cat,
     value: categoryTotals[cat],
   }));
+
+  // Small slice adjustment
+  const MIN_PERCENTAGE = 0.05; // 5% minimum visual size
+  const total = pieData.reduce((sum, d) => sum + d.value, 0);
+
+  const adjustedPieData = pieData.map((d) => {
+    const actualPercent = d.value / total;
+    const displayValue =
+      actualPercent < MIN_PERCENTAGE ? total * MIN_PERCENTAGE : d.value;
+    return { ...d, displayValue, actualValue: d.value };
+  });
 
   // Bar: Vendor totals
   const vendorTotals = transactions.reduce((acc, t) => {
@@ -193,6 +69,7 @@ function Charts({ transactions }) {
     acc[vendor] = (acc[vendor] || 0) + t.amount;
     return acc;
   }, {});
+
   const barData = Object.keys(vendorTotals).map((vendor) => ({
     vendor,
     amount: vendorTotals[vendor],
@@ -210,20 +87,24 @@ function Charts({ transactions }) {
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
-              data={pieData}
+              data={adjustedPieData}
               cx="50%"
               cy="50%"
               outerRadius={100}
               fill="#8884d8"
-              dataKey="value"
-              label={false}         // 🚫 disable labels on slices
-              minAngle={5}   
+              dataKey="displayValue" // boosted for visual
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
             >
-              {pieData.map((entry, index) => (
+              {adjustedPieData.map((entry, index) => (
                 <Cell key={index} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(val) => `₹${val.toLocaleString()}`} />
+            <Tooltip
+              formatter={(value, name, props) => {
+                const actual = props.payload.actualValue;
+                return `₹${actual.toLocaleString()}`;
+              }}
+            />
             <Legend verticalAlign="bottom" />
           </PieChart>
         </ResponsiveContainer>
@@ -255,5 +136,3 @@ function Charts({ transactions }) {
 }
 
 export default Charts;
-
-

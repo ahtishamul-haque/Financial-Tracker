@@ -81,6 +81,7 @@ function Charts({ transactions }) {
               fill="#8884d8"
               dataKey="value"
               label={false}         // 🚫 disable labels on slices
+              minAngle={5}   
             >
               {pieData.map((entry, index) => (
                 <Cell key={index} fill={COLORS[index % COLORS.length]} />
@@ -118,3 +119,4 @@ function Charts({ transactions }) {
 }
 
 export default Charts;
+

@@ -51,6 +51,7 @@ const categoryMap = {
   maxfashion: "Shopping",
   pepperfry: "Shopping",
   ikea: "Shopping",
+  edutech: "Education",
 
   // 🍔 Food & Cafe
   swiggy: "Food",
@@ -62,6 +63,7 @@ const categoryMap = {
   burgerking: "Food",
   subway: "Food",
   bbq: "Food",
+  confectionery: "Cafe",
   eatfit: "Food",
   cafe: "Cafe",
   starbucks: "Cafe",
@@ -73,6 +75,7 @@ const categoryMap = {
   
   // 🥦 Groceries
   blinkit: "Groceries",
+  zepto: "Groceries",
   bigbasket: "Groceries",
   grofers: "Groceries",
   dmart: "Groceries",
@@ -81,7 +84,9 @@ const categoryMap = {
   spencers: "Groceries",
   naturebasket: "Groceries",
   dairy: "Groceries",
+  provision: "Groceries",
   groceries: "Groceries",
+  hrs: "Groceries",
 
   // 🚖 Travel
   ola: "Travel",
@@ -98,6 +103,7 @@ const categoryMap = {
   airindia: "Travel",
   vistara: "Travel",
   travel: "Travel",
+  metro: "Travel",
 
   // 💡 Bills & Utilities
   jio: "Bill Payments",
@@ -179,6 +185,7 @@ const categoryMap = {
   bajaj: "Insurance",
   tataAig: "Insurance",
   iciciPrudential: "Insurance",
+  edutech: "Education",
 };
 
 function detectCategory(vendor) {

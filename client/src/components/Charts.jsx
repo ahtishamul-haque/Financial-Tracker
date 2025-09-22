@@ -26,49 +26,69 @@ const mergedCategories = {
   other: "Other",
 };
 
+// Normalize category names
 const normalizeCategory = (cat) => {
   if (!cat) return "Other";
   const lower = cat.toLowerCase();
   return mergedCategories[lower] || cat;
 };
 
+// Get week number from a date
 const getWeekNumber = (date) => {
   const firstDay = new Date(date.getFullYear(), 0, 1);
   const pastDays = (date - firstDay) / (1000 * 60 * 60 * 24);
   return Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
 };
 
+// Format for month and day
 const formatMonth = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
 const formatDay = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
-function Charts({ transactions }) {
-  if (!transactions || transactions.length === 0) {
-    return (
-      <p className="text-gray-500 italic text-center">No data to display</p>
-    );
+// ✅ NEW: Safe date parser to handle inconsistent formats
+const parseDateSafely = (rawDate) => {
+  if (!rawDate) return null;
+
+  // Format: DD-MM-YYYY
+  const dmyMatch = rawDate.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (dmyMatch) {
+    const [, day, month, year] = dmyMatch;
+    return new Date(`${year}-${month}-${day}`);
   }
 
+  // Format: MM/DD/YYYY
+  const mdyMatch = rawDate.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (mdyMatch) {
+    const [, month, day, year] = mdyMatch;
+    return new Date(`${year}-${month}-${day}`);
+  }
+
+  // Fallback: ISO or valid formats
+  return new Date(rawDate);
+};
+
+function Charts({ transactions }) {
+  if (!transactions || transactions.length === 0) {
+    return <p className="text-gray-500 italic text-center">No data to display</p>;
+  }
+
+  // Validate transactions
   const validTransactions = transactions.filter((t) => {
-    if (!t.date) return false;
-    const d = new Date(t.date);
-    if (!(d instanceof Date) || isNaN(d)) {
+    const d = parseDateSafely(t.date);
+    const isValid = d instanceof Date && !isNaN(d.getTime());
+    if (!isValid) {
       console.warn("Invalid date in transaction:", t);
-      return false;
     }
-    return true;
+    return isValid;
   });
 
-  const validDates = validTransactions.map((t) => new Date(t.date));
+  console.log("Valid Transactions:", validTransactions);
 
+  const validDates = validTransactions.map((t) => parseDateSafely(t.date));
   if (validDates.length === 0) {
-    return (
-      <p className="text-gray-500 italic text-center">
-        No valid transaction dates found
-      </p>
-    );
+    return <p className="text-gray-500 italic text-center">No valid transaction dates found</p>;
   }
 
   const minDate = new Date(Math.min(...validDates));
@@ -118,7 +138,7 @@ function Charts({ transactions }) {
 
   // Bar Chart Data
   const groupedTotals = validTransactions.reduce((acc, t) => {
-    const dateObj = new Date(t.date);
+    const dateObj = parseDateSafely(t.date);
     let fullLabel = "";
 
     if (granularity === "day") {
@@ -149,10 +169,8 @@ function Charts({ transactions }) {
         const weekNum = parseInt(weekPart.replace("W", ""));
         const jan1 = new Date(year, 0, 1);
         const weekDate = new Date(jan1.setDate((weekNum - 1) * 7));
-        const monthName = weekDate.toLocaleString("default", {
-          month: "short",
-        });
-        label = `${weekPart} ${monthName}`; // e.g. W1 Jan
+        const monthName = weekDate.toLocaleString("default", { month: "short" });
+        label = `${weekPart} ${monthName}`;
       } else if (granularity === "month") {
         const date = new Date(fullLabel + "-01");
         label = date.toLocaleString("default", { month: "short" });

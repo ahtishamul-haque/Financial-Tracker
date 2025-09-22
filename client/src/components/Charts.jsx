@@ -13,48 +13,92 @@ import {
   CartesianGrid,
 } from "recharts";
 
+// Category Mapping
+const mergedCategories = {
+  groceries: "Essentials",
+  food: "Essentials",
+  shopping: "Shopping",
+  travel: "Travel",
+  bills: "Bills",
+  entertainment: "Entertainment",
+  medical: "Medical",
+  services: "Services",
+  other: "Other",
+};
+
+const normalizeCategory = (cat) => {
+  if (!cat) return "Other";
+  const lower = cat.toLowerCase();
+  return mergedCategories[lower] || cat;
+};
+
+const getWeekNumber = (date) => {
+  const firstDay = new Date(date.getFullYear(), 0, 1);
+  const pastDays = (date - firstDay) / (1000 * 60 * 60 * 24);
+  return Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
+};
+
+const formatMonth = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+
+const formatDay = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
 function Charts({ transactions }) {
-  if (!transactions || transactions.length === 0)
+  if (!transactions || transactions.length === 0) {
+    return (
+      <p className="text-gray-500 italic text-center">No data to display</p>
+    );
+  }
+
+  const validTransactions = transactions.filter((t) => {
+    if (!t.date) return false;
+    const d = new Date(t.date);
+    if (!(d instanceof Date) || isNaN(d)) {
+      console.warn("Invalid date in transaction:", t);
+      return false;
+    }
+    return true;
+  });
+
+  const validDates = validTransactions.map((t) => new Date(t.date));
+
+  if (validDates.length === 0) {
     return (
       <p className="text-gray-500 italic text-center">
-        No data to display
+        No valid transaction dates found
       </p>
     );
+  }
 
-  // Category mapping
-  const mergedCategories = {
-    groceries: "Essentials",
-    food: "Essentials",
-    shopping: "Shopping",
-    travel: "Travel",
-    bills: "Bills",
-    entertainment: "Entertainment",
-    medical: "Medical",
-    services: "Services",
-    other: "Other",
-  };
+  const minDate = new Date(Math.min(...validDates));
+  const maxDate = new Date(Math.max(...validDates));
+  const monthDiff =
+    maxDate.getFullYear() * 12 +
+    maxDate.getMonth() -
+    (minDate.getFullYear() * 12 + minDate.getMonth());
 
-  const normalizeCategory = (cat) => {
-    if (!cat) return "Other";
-    const lower = cat.toLowerCase();
-    return mergedCategories[lower] || cat;
-  };
+  let granularity = "day";
+  if (monthDiff >= 4) {
+    granularity = "month";
+  } else if (monthDiff >= 1) {
+    granularity = "week";
+  }
 
-  // Pie: Category totals
-  const categoryTotals = transactions.reduce((acc, t) => {
+  // Pie Chart Data
+  const categoryTotals = validTransactions.reduce((acc, t) => {
     const cat = normalizeCategory(t.category);
     acc[cat] = (acc[cat] || 0) + t.amount;
     return acc;
   }, {});
 
-  const pieData = Object.keys(categoryTotals).map((cat) => ({
-    name: cat,
-    value: categoryTotals[cat],
+  const pieData = Object.entries(categoryTotals).map(([name, value]) => ({
+    name,
+    value,
   }));
 
-  // Small slice adjustment
-  const MIN_PERCENTAGE = 0.05; // 5% minimum visual size
   const total = pieData.reduce((sum, d) => sum + d.value, 0);
+  const MIN_PERCENTAGE = 0.05;
 
   const adjustedPieData = pieData.map((d) => {
     const actualPercent = d.value / total;
@@ -63,19 +107,75 @@ function Charts({ transactions }) {
     return { ...d, displayValue, actualValue: d.value };
   });
 
-  // Bar: Vendor totals
-  const vendorTotals = transactions.reduce((acc, t) => {
-    const vendor = t.vendor || "Unknown";
-    acc[vendor] = (acc[vendor] || 0) + t.amount;
+  const PIE_COLORS = [
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#8884D8",
+    "#FF6666",
+  ];
+
+  // Bar Chart Data
+  const groupedTotals = validTransactions.reduce((acc, t) => {
+    const dateObj = new Date(t.date);
+    let fullLabel = "";
+
+    if (granularity === "day") {
+      fullLabel = formatDay(dateObj);
+    } else if (granularity === "week") {
+      const week = getWeekNumber(dateObj);
+      const year = dateObj.getFullYear();
+      fullLabel = `W${week} ${year}`;
+    } else if (granularity === "month") {
+      fullLabel = formatMonth(dateObj);
+    }
+
+    acc[fullLabel] = (acc[fullLabel] || 0) + t.amount;
     return acc;
   }, {});
 
-  const barData = Object.keys(vendorTotals).map((vendor) => ({
-    vendor,
-    amount: vendorTotals[vendor],
-  }));
+  const barData = Object.entries(groupedTotals)
+    .map(([fullLabel, amount]) => {
+      let label = fullLabel;
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#FF6666"];
+      if (granularity === "day") {
+        const date = new Date(fullLabel);
+        const day = date.getDate();
+        const month = date.toLocaleString("default", { month: "short" });
+        label = `${day} ${month}`;
+      } else if (granularity === "week") {
+        const [weekPart, year] = fullLabel.split(" ");
+        const weekNum = parseInt(weekPart.replace("W", ""));
+        const jan1 = new Date(year, 0, 1);
+        const weekDate = new Date(jan1.setDate((weekNum - 1) * 7));
+        const monthName = weekDate.toLocaleString("default", {
+          month: "short",
+        });
+        label = `${weekPart} ${monthName}`; // e.g. W1 Jan
+      } else if (granularity === "month") {
+        const date = new Date(fullLabel + "-01");
+        label = date.toLocaleString("default", { month: "short" });
+      }
+
+      return { label, fullLabel, amount };
+    })
+    .sort((a, b) => {
+      const parseDate = (item) => {
+        if (granularity === "day") return new Date(item.fullLabel);
+        if (granularity === "week") {
+          const match = item.fullLabel.match(/W(\d+)\s(\d+)/);
+          if (!match) return new Date();
+          const [, week, year] = match;
+          const jan1 = new Date(year, 0, 1);
+          return new Date(jan1.setDate((week - 1) * 7));
+        }
+        if (granularity === "month") return new Date(item.fullLabel + "-01");
+        return new Date();
+      };
+
+      return parseDate(a) - parseDate(b);
+    });
 
   return (
     <div className="flex flex-col md:flex-row justify-center items-center gap-6">
@@ -92,11 +192,16 @@ function Charts({ transactions }) {
               cy="50%"
               outerRadius={100}
               fill="#8884d8"
-              dataKey="displayValue" // boosted for visual
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              dataKey="displayValue"
+              label={({ name, percent }) =>
+                `${name} ${(percent * 100).toFixed(0)}%`
+              }
             >
               {adjustedPieData.map((entry, index) => (
-                <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                <Cell
+                  key={`cell-${index}`}
+                  fill={PIE_COLORS[index % PIE_COLORS.length]}
+                />
               ))}
             </Pie>
             <Tooltip
@@ -113,20 +218,28 @@ function Charts({ transactions }) {
       {/* Bar Chart */}
       <div className="bg-white shadow-lg rounded-xl p-6 w-full md:w-1/2">
         <h3 className="text-lg font-semibold text-gray-700 text-center mb-4">
-          Spending by Vendor
+          Spending by{" "}
+          {granularity === "day"
+            ? "Day"
+            : granularity === "week"
+            ? "Week"
+            : "Month"}
         </h3>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={barData} margin={{ top: 5, right: 20, left: 0, bottom: 40 }}>
+          <BarChart
+            data={barData}
+            margin={{ top: 5, right: 20, left: 0, bottom: 40 }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-              dataKey="vendor"
+              dataKey="label"
               tick={{ fontSize: 12 }}
-              interval={0}
               angle={-30}
               textAnchor="end"
             />
             <YAxis />
             <Tooltip formatter={(val) => `₹${val.toLocaleString()}`} />
+            <Legend />
             <Bar dataKey="amount" fill="#00C49F" />
           </BarChart>
         </ResponsiveContainer>
@@ -136,5 +249,3 @@ function Charts({ transactions }) {
 }
 
 export default Charts;
-
-

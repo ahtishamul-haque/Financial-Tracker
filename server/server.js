@@ -33,7 +33,7 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
 
 // Extended category mapping
 const categoryMap = {
-  // 🛒 Shopping
+  // Shopping
   myntra: "Shopping",
   amazon: "Shopping",
   flipkart: "Shopping",
@@ -53,7 +53,7 @@ const categoryMap = {
   ikea: "Shopping",
   edutech: "Education",
 
-  // 🍔 Food & Cafe
+  // Food & Cafe
   swiggy: "Food",
   zomato: "Food",
   dominos: "Food",
@@ -73,7 +73,7 @@ const categoryMap = {
   cool: "Cafe",
   sweets: "Food",
   
-  // 🥦 Groceries
+  // Groceries
   blinkit: "Groceries",
   zepto: "Groceries",
   bigbasket: "Groceries",
@@ -88,7 +88,7 @@ const categoryMap = {
   groceries: "Groceries",
   hrs: "Groceries",
 
-  // 🚖 Travel
+  // Travel
   ola: "Travel",
   uber: "Travel",
   redbus: "Travel",
@@ -105,7 +105,7 @@ const categoryMap = {
   travel: "Travel",
   metro: "Travel",
 
-  // 💡 Bills & Utilities
+  // Bills & Utilities
   jio: "Bill Payments",
   airtel: "Bill Payments",
   vodafone: "Bill Payments",
@@ -118,7 +118,7 @@ const categoryMap = {
   adanipower: "Bill Payments",
   mseb: "Bill Payments",
 
-  // 🎬 Entertainment
+  // Entertainment
   hudle: "Entertainment",
   bookmyshow: "Entertainment",
   hotstar: "Entertainment",
@@ -134,7 +134,7 @@ const categoryMap = {
   wynk: "Entertainment",
   youtube: "Entertainment",
   
-  // 🏦 Wallets / Banks
+  // Wallets / Banks
   bank: "Wallet Top-up",
   icici: "Wallet Top-up",
   sbi: "Wallet Top-up",
@@ -151,7 +151,7 @@ const categoryMap = {
   freecharge: "Wallet Top-up",
   mobikwik: "Wallet Top-up",
 
-  // 💰 Savings & Investments
+  // Savings & Investments
   jar: "Savings",
   automatic: "Savings",
   payment: "Savings",
@@ -162,7 +162,7 @@ const categoryMap = {
   upstox: "Investments",
   sharekhan: "Investments",
 
-  // 💊 Medical & Health
+  // Medical & Health
   nursing: "Hospital",
   hospital: "Medical",
   apollo: "Medical",
@@ -175,7 +175,7 @@ const categoryMap = {
   pharmacy: "Medical",
   medical: "Medical",
   
-  // 💵 Misc
+  // Misc
   cash: "Cash",
   recharge: "Recharges",
   dth: "Recharges",
@@ -232,7 +232,7 @@ app.post("/api/parse", upload.single("pdf"), async (req, res) => {
       if (amountMatch && i + 1 < lines.length) {
         const sign = amountMatch[1];
         const amount = parseFloat(amountMatch[2].replace(/,/g, ""));
-        const nextLine = lines[i + 1]; // vendor is usually the next line
+        const nextLine = lines[i + 1];
 
         if (/^Paid to/i.test(nextLine) || /^Added to/i.test(nextLine)) {
           const vendor = nextLine.replace(
@@ -308,7 +308,7 @@ app.post("/api/parse", upload.single("pdf"), async (req, res) => {
         });
         console.log("UPI Tx:", currentVendor, amount, category);
         }
-        currentVendor = null; // reset
+        currentVendor = null;
       }
     }
 
@@ -343,6 +343,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`Server running on port http://localhost:${PORT}`)
 );
+
 
 
 

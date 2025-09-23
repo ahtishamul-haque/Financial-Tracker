@@ -47,7 +47,7 @@ const formatMonth = (date) =>
 const formatDay = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
-// ✅ NEW: Safe date parser to handle inconsistent formats
+// NEW: Safe date parser to handle inconsistent formats
 const parseDateSafely = (rawDate) => {
   if (!rawDate) return null;
 
@@ -267,3 +267,4 @@ function Charts({ transactions }) {
 }
 
 export default Charts;
+

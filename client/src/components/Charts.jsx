@@ -183,21 +183,38 @@ function Charts({ transactions }) {
     return { label, fullLabel, amount };
   });
 
-  // Key Insight
-  const totalSpending = validTransactions.reduce((sum, t) => sum + t.amount, 0);
-  const categoryTotalsOriginal = validTransactions.reduce((acc, t) => {
-    acc[t.category] = (acc[t.category] || 0) + t.amount;
-    return acc;
-  }, {});
-
-  const [topCategoryOriginal, topAmountOriginal] = Object.entries(categoryTotalsOriginal).reduce(
-    (prev, curr) => (curr[1] > prev[1] ? curr : prev)
-  );
-
-  const percentOriginal = ((topAmountOriginal / totalSpending) * 100).toFixed(0);
+  // ✅ Fixed Key Insight (align with Pie Chart displayed percentages)
+  // Use adjustedPieData.displayValue (the same values the Pie uses) so insight matches the pie labels
+  const totalDisplayed = adjustedPieData.reduce((sum, d) => sum + d.displayValue, 0);
+  const [topCategoryData] = [...adjustedPieData].sort((a, b) => b.displayValue - a.displayValue);
+  const percentOriginal = totalDisplayed
+    ? ((topCategoryData.displayValue / totalDisplayed) * 100).toFixed(0)
+    : 0;
   const peerPercent = 18;
 
-  const insight = `You spend ${percentOriginal}% of your income on ${topCategoryOriginal}, compared to the average ${peerPercent}% in your peer group.`;
+  const insight = `- You spend ${percentOriginal}% of your income on ${topCategoryData.name}, compared to the average ${peerPercent}% in your peer group.`;
+
+  // Second Key Insight: Highest period spend based on granularity
+const highestEntry = Object.entries(filledTotals).reduce(
+  (prev, curr) => (curr[1] > prev[1] ? curr : prev),
+  ["", 0]
+);
+
+let periodLabel = highestEntry[0];
+if (granularity === "day") {
+  const [year, month, day] = periodLabel.split("-");
+  const date = new Date(year, month - 1, day);
+  periodLabel = `${day} ${date.toLocaleString("default", { month: "short" })}`;
+} else if (granularity === "week") {
+  const [year, month, day] = periodLabel.split("-");
+  const date = new Date(year, month - 1, day);
+  periodLabel = `W${getWeekNumber(date)} ${date.toLocaleString("default", { month: "short" })}`;
+} else if (granularity === "month") {
+  const date = new Date(periodLabel + "-01");
+  periodLabel = date.toLocaleString("default", { month: "long" });
+}
+
+const secondInsight = `- Your spends in ${periodLabel} were the highest ₹${highestEntry[1].toLocaleString()}.`;
 
   return (
     <div className="flex flex-col md:flex-row justify-center items-center gap-6">
@@ -244,6 +261,8 @@ function Charts({ transactions }) {
         </ResponsiveContainer>
         <h3>Key Insights</h3>
         <p className="text-center mt-4 font-semibold text-gray-600">{insight}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{secondInsight}</p>
+
       </div>
     </div>
   );

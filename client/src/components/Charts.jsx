@@ -125,7 +125,7 @@ function Charts({ transactions }) {
 
   const PIE_COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#FF6666"];
 
-  // Bar Chart: Ensure missing periods are filled
+  // Bar Chart:
   const groupedTotals = {};
   validTransactions.forEach((t) => {
     const dateObj = parseDateSafely(t.date);
@@ -183,37 +183,70 @@ function Charts({ transactions }) {
     return { label, fullLabel, amount };
   });
 
-  // Key Insight
+  // Insight 1: Top Category vs Peer
   const totalDisplayed = adjustedPieData.reduce((sum, d) => sum + d.displayValue, 0);
   const [topCategoryData] = [...adjustedPieData].sort((a, b) => b.displayValue - a.displayValue);
   const percentOriginal = totalDisplayed
     ? ((topCategoryData.displayValue / totalDisplayed) * 100).toFixed(0)
     : 0;
   const peerPercent = 18;
-
   const insight = `- You spend ${percentOriginal}% of your income on ${topCategoryData.name}, compared to the average ${peerPercent}% in your peer group.`;
 
-  // Second Key Insight
+  // Insight 2: Highest period spend
   const highestEntry = Object.entries(filledTotals).reduce(
     (prev, curr) => (curr[1] > prev[1] ? curr : prev),
     ["", 0]
-    );
-
+  );
   let periodLabel = highestEntry[0];
   if (granularity === "day") {
-  const [year, month, day] = periodLabel.split("-");
-  const date = new Date(year, month - 1, day);
+    const [year, month, day] = periodLabel.split("-");
+    const date = new Date(year, month - 1, day);
     periodLabel = `${day} ${date.toLocaleString("default", { month: "short" })}`;
-    } else if (granularity === "week") {
-  const [year, month, day] = periodLabel.split("-");
-  const date = new Date(year, month - 1, day);
+  } else if (granularity === "week") {
+    const [year, month, day] = periodLabel.split("-");
+    const date = new Date(year, month - 1, day);
     periodLabel = `W${getWeekNumber(date)} ${date.toLocaleString("default", { month: "short" })}`;
-    } else if (granularity === "month") {
-  const date = new Date(periodLabel + "-01");
+  } else if (granularity === "month") {
+    const date = new Date(periodLabel + "-01");
     periodLabel = date.toLocaleString("default", { month: "long" });
-    }
-
+  }
   const secondInsight = `- Your spends in ${periodLabel} were the highest ₹${highestEntry[1].toLocaleString()}.`;
+
+  // Insight 3: Average spend per transaction
+  const avgSpend = Math.round(total / validTransactions.length);
+  const thirdInsight = `- Your average spend per transaction is ₹${avgSpend.toLocaleString()}.`;
+
+  // Insight 4: Lowest spend period
+  const lowestEntry = Object.entries(filledTotals).reduce(
+    (prev, curr) => (curr[1] < prev[1] ? curr : prev),
+    ["", Infinity]
+  );
+  let lowestLabel = lowestEntry[0];
+  if (granularity === "day") {
+    const [year, month, day] = lowestLabel.split("-");
+    const date = new Date(year, month - 1, day);
+    lowestLabel = `${day} ${date.toLocaleString("default", { month: "short" })}`;
+  } else if (granularity === "week") {
+    const [year, month, day] = lowestLabel.split("-");
+    const date = new Date(year, month - 1, day);
+    lowestLabel = `W${getWeekNumber(date)} ${date.toLocaleString("default", { month: "short" })}`;
+  } else if (granularity === "month") {
+    const date = new Date(lowestLabel + "-01");
+    lowestLabel = date.toLocaleString("default", { month: "long" });
+  }
+  const fourthInsight = `- Your lowest spend was in ${lowestLabel} is ₹${lowestEntry[1].toLocaleString()}.`;
+
+  // Insight 5: Top 2 categories combined
+  const topTwo = [...adjustedPieData].sort((a, b) => b.displayValue - a.displayValue).slice(0, 2);
+  const combinedPercent = (
+    ((topTwo[0].displayValue + topTwo[1].displayValue) / totalDisplayed) *
+    100
+  ).toFixed(0);
+  const fifthInsight = `- Your top 2 categories make up ${combinedPercent}% of your total spending.`;
+
+  // Insight 6: Accurate total spend
+  const accurateTotal = validTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+  const sixthInsight = `- You made total ${validTransactions.length} transactions.`;
 
   return (
     <div className="flex flex-col md:flex-row justify-center items-center gap-6">
@@ -237,7 +270,9 @@ function Charts({ transactions }) {
                 <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(value, name, props) => `₹${props.payload.actualValue.toLocaleString()}`} />
+            <Tooltip
+              formatter={(value, name, props) => `₹${props.payload.actualValue.toLocaleString()}`}
+            />
             <Legend verticalAlign="bottom" />
           </PieChart>
         </ResponsiveContainer>
@@ -261,11 +296,13 @@ function Charts({ transactions }) {
         <h3>Key Insights</h3>
         <p className="text-center mt-4 font-semibold text-gray-600">{insight}</p>
         <p className="text-center mt-2 font-semibold text-gray-600">{secondInsight}</p>
-
+        <p className="text-center mt-2 font-semibold text-gray-600">{thirdInsight}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{fourthInsight}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{fifthInsight}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{sixthInsight}</p>
       </div>
     </div>
   );
 }
 
 export default Charts;
-

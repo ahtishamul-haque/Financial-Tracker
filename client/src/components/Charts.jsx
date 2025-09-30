@@ -183,7 +183,7 @@ function Charts({ transactions }) {
     return { label, fullLabel, amount };
   });
 
-  // -------- INSIGHTS --------
+  // Insights
   const totalDisplayed = adjustedPieData.reduce((sum, d) => sum + d.displayValue, 0);
   const [topCategoryData] = [...adjustedPieData].sort((a, b) => b.displayValue - a.displayValue);
 
@@ -245,15 +245,15 @@ function Charts({ transactions }) {
   // Insight 6
   const insight6 = `- You made total ${validTransactions.length} transactions.`;
 
-  // Insight 7: Peak category spend value
+  // Insight 7
   const insight7 = `- You spent the most in ${topCategoryData.name} with ₹${topCategoryData.actualValue.toLocaleString()}.`;
 
-  // Insight 8: Average spend per day
+  // Insight 8
   const totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24) + 1;
   const avgPerDay = Math.round(total / totalDays);
   const insight8 = `- Your average daily spend is ₹${avgPerDay.toLocaleString()}.`;
 
-  // Insight 9: Month-on-month growth
+  // Insight 9
   const months = Object.values(filledTotals);
   let growth = "N/A";
   if (months.length >= 2) {
@@ -265,13 +265,11 @@ function Charts({ transactions }) {
   }
   const insight9 = `- Your last period spending changed by ${growth} compared to the previous.`;
 
-  // Insight 10: Average spend per category
+  // Insight 10
   const avgPerCategory = (total / Object.keys(categoryTotals).length).toFixed(0);
   const insight10 = `- On average, you spend ₹${avgPerCategory} per category.`;
 
-  // ----- EXTRA INSIGHTS 11-20 (added) -----
-
-  // Insight 11: Median spend per transaction
+  // Insight 11
   const medianSpend = (() => {
     if (validTransactions.length === 0) return 0;
     const sorted = validTransactions.map((t) => t.amount).sort((a, b) => a - b);
@@ -280,7 +278,7 @@ function Charts({ transactions }) {
   })();
   const insight11 = `- Median spend per transaction is ₹${medianSpend.toLocaleString()}.`;
 
-  // Insight 12: Largest single transaction
+  // Insight 12:
   const largestTxn = validTransactions.length
     ? validTransactions.reduce((max, t) => (t.amount > max.amount ? t : max), validTransactions[0])
     : { amount: 0, date: null };
@@ -291,7 +289,7 @@ function Charts({ transactions }) {
   }
   const insight12 = `- Your largest single transaction was ₹${largestTxn.amount.toLocaleString()}${largestTxnDate ? ` on ${largestTxnDate}` : ""}.`;
 
-  // Insight 13: Smallest single transaction
+  // Insight 13:
   const smallestTxn = validTransactions.length
     ? validTransactions.reduce((min, t) => (t.amount < min.amount ? t : min), validTransactions[0])
     : { amount: 0, date: null };
@@ -302,7 +300,7 @@ function Charts({ transactions }) {
   }
   const insight13 = `- Your smallest transaction was ₹${smallestTxn.amount.toLocaleString()}${smallestTxnDate ? ` on ${smallestTxnDate}` : ""}.`;
 
-  // Insight 14: Weekend vs Weekday spend
+  // Insight 14:
   const weekendSpend = validTransactions
     .filter((t) => {
       const day = parseDateSafely(t.date).getDay();
@@ -312,11 +310,11 @@ function Charts({ transactions }) {
   const weekdaySpend = total - weekendSpend;
   const insight14 = `- Weekend vs weekday spend: ₹${weekendSpend.toLocaleString()} vs ₹${weekdaySpend.toLocaleString()}.`;
 
-  // Insight 15: Average weekly spend
+  // Insight 15:
   const avgPerWeek = Math.round(total / (totalDays / 7 || 1));
   const insight15 = `- Weekly average spend is ₹${avgPerWeek.toLocaleString()}.`;
 
-  // Insight 16: Busiest day (most transactions)
+  // Insight 16:
   const busiestDayCountMap = validTransactions.reduce((acc, t) => {
     const dayName = parseDateSafely(t.date).toLocaleDateString("default", { weekday: "long" });
     acc[dayName] = (acc[dayName] || 0) + 1;
@@ -325,15 +323,15 @@ function Charts({ transactions }) {
   const busiestDayEntry = Object.entries(busiestDayCountMap).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0];
   const insight16 = `- You made the most transactions on ${busiestDayEntry[0]} (${busiestDayEntry[1]} transactions).`;
 
-  // Insight 17: Category diversity
+  // Insight 17:
   const uniqueCategories = Object.keys(categoryTotals).length;
   const insight17 = `- You spent across ${uniqueCategories} different categories.`;
 
-  // Insight 18: Average transactions per day
+  // Insight 18:
   const avgTransactionPerDay = (validTransactions.length / (totalDays || 1)).toFixed(2);
   const insight18 = `- You made on average ${avgTransactionPerDay} transactions per day.`;
 
-  // Insight 19: Standard deviation of transaction amounts
+  // Insight 19:
   const spendStdDev = (() => {
     if (validTransactions.length === 0) return 0;
     const mean = total / validTransactions.length;
@@ -343,7 +341,7 @@ function Charts({ transactions }) {
   })();
   const insight19 = `- Standard deviation of transactions: ₹${spendStdDev}.`;
 
-  // Insight 20: Top 3 categories share
+  // Insight 20:
   const top3Categories = [...adjustedPieData].sort((a, b) => b.displayValue - a.displayValue).slice(0, 3);
   const top3Share = totalDisplayed ? ((top3Categories.reduce((s, c) => s + c.displayValue, 0) / totalDisplayed) * 100).toFixed(0) : 0;
   const insight20 = `- Your top 3 categories account for ${top3Share}% of spending.`;
@@ -400,8 +398,6 @@ function Charts({ transactions }) {
         <p className="text-center mt-2 font-semibold text-gray-600">{insight4}</p>
         <p className="text-center mt-2 font-semibold text-gray-600">{insight5}</p>
         <p className="text-center mt-2 font-semibold text-gray-600">{insight6}</p>
-
-        {/* Newly added insights (7-20) */}
         <p className="text-center mt-2 font-semibold text-gray-600">{insight7}</p>
         <p className="text-center mt-2 font-semibold text-gray-600">{insight8}</p>
         <p className="text-center mt-2 font-semibold text-gray-600">{insight9}</p>
@@ -422,4 +418,5 @@ function Charts({ transactions }) {
 }
 
 export default Charts;
+
 

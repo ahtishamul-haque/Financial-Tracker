@@ -232,7 +232,7 @@ function Charts({ transactions }) {
   } else if (granularity === "month") {
     lowestLabel = new Date(lowestLabel + "-01").toLocaleString("default", { month: "long" });
   }
-  const insight4 = `- Your lowest spend was in ${lowestLabel} (₹${lowestEntry[1].toLocaleString()}).`;
+  const insight4 = `- Your lowest spend was in ${lowestLabel} ₹${lowestEntry[1].toLocaleString()}.`;
 
   // Insight 5
   const topTwo = [...adjustedPieData].sort((a, b) => b.displayValue - a.displayValue).slice(0, 2);
@@ -422,3 +422,4 @@ function Charts({ transactions }) {
 }
 
 export default Charts;
+

@@ -183,70 +183,170 @@ function Charts({ transactions }) {
     return { label, fullLabel, amount };
   });
 
-  // Insight 1: Top Category vs Peer
+  // -------- INSIGHTS --------
   const totalDisplayed = adjustedPieData.reduce((sum, d) => sum + d.displayValue, 0);
   const [topCategoryData] = [...adjustedPieData].sort((a, b) => b.displayValue - a.displayValue);
+
+  // Insight 1
   const percentOriginal = totalDisplayed
     ? ((topCategoryData.displayValue / totalDisplayed) * 100).toFixed(0)
     : 0;
   const peerPercent = 18;
-  const insight = `- You spend ${percentOriginal}% of your income on ${topCategoryData.name}, compared to the average ${peerPercent}% in your peer group.`;
+  const insight1 = `- You spend ${percentOriginal}% of your income on ${topCategoryData.name}, compared to the average ${peerPercent}% in your peer group.`;
 
-  // Insight 2: Highest period spend
+  // Insight 2
   const highestEntry = Object.entries(filledTotals).reduce(
     (prev, curr) => (curr[1] > prev[1] ? curr : prev),
     ["", 0]
   );
   let periodLabel = highestEntry[0];
   if (granularity === "day") {
-    const [year, month, day] = periodLabel.split("-");
-    const date = new Date(year, month - 1, day);
-    periodLabel = `${day} ${date.toLocaleString("default", { month: "short" })}`;
+    const [y, m, d] = periodLabel.split("-");
+    periodLabel = `${d} ${new Date(y, m - 1, d).toLocaleString("default", { month: "short" })}`;
   } else if (granularity === "week") {
-    const [year, month, day] = periodLabel.split("-");
-    const date = new Date(year, month - 1, day);
+    const [y, m, d] = periodLabel.split("-");
+    const date = new Date(y, m - 1, d);
     periodLabel = `W${getWeekNumber(date)} ${date.toLocaleString("default", { month: "short" })}`;
   } else if (granularity === "month") {
-    const date = new Date(periodLabel + "-01");
-    periodLabel = date.toLocaleString("default", { month: "long" });
+    periodLabel = new Date(periodLabel + "-01").toLocaleString("default", { month: "long" });
   }
-  const secondInsight = `- Your spends in ${periodLabel} were the highest ₹${highestEntry[1].toLocaleString()}.`;
+  const insight2 = `- Your spends in ${periodLabel} were the highest ₹${highestEntry[1].toLocaleString()}.`;
 
-  // Insight 3: Average spend per transaction
+  // Insight 3
   const avgSpend = Math.round(total / validTransactions.length);
-  const thirdInsight = `- Your average spend per transaction is ₹${avgSpend.toLocaleString()}.`;
+  const insight3 = `- Your average spend per transaction is ₹${avgSpend.toLocaleString()}.`;
 
-  // Insight 4: Lowest spend period
+  // Insight 4
   const lowestEntry = Object.entries(filledTotals).reduce(
     (prev, curr) => (curr[1] < prev[1] ? curr : prev),
     ["", Infinity]
   );
   let lowestLabel = lowestEntry[0];
   if (granularity === "day") {
-    const [year, month, day] = lowestLabel.split("-");
-    const date = new Date(year, month - 1, day);
-    lowestLabel = `${day} ${date.toLocaleString("default", { month: "short" })}`;
+    const [y, m, d] = lowestLabel.split("-");
+    lowestLabel = `${d} ${new Date(y, m - 1, d).toLocaleString("default", { month: "short" })}`;
   } else if (granularity === "week") {
-    const [year, month, day] = lowestLabel.split("-");
-    const date = new Date(year, month - 1, day);
+    const [y, m, d] = lowestLabel.split("-");
+    const date = new Date(y, m - 1, d);
     lowestLabel = `W${getWeekNumber(date)} ${date.toLocaleString("default", { month: "short" })}`;
   } else if (granularity === "month") {
-    const date = new Date(lowestLabel + "-01");
-    lowestLabel = date.toLocaleString("default", { month: "long" });
+    lowestLabel = new Date(lowestLabel + "-01").toLocaleString("default", { month: "long" });
   }
-  const fourthInsight = `- Your lowest spend was in ${lowestLabel} is ₹${lowestEntry[1].toLocaleString()}.`;
+  const insight4 = `- Your lowest spend was in ${lowestLabel} (₹${lowestEntry[1].toLocaleString()}).`;
 
-  // Insight 5: Top 2 categories combined
+  // Insight 5
   const topTwo = [...adjustedPieData].sort((a, b) => b.displayValue - a.displayValue).slice(0, 2);
   const combinedPercent = (
     ((topTwo[0].displayValue + topTwo[1].displayValue) / totalDisplayed) *
     100
   ).toFixed(0);
-  const fifthInsight = `- Your top 2 categories make up ${combinedPercent}% of your total spending.`;
+  const insight5 = `- Your top 2 categories make up ${combinedPercent}% of your total spending.`;
 
-  // Insight 6: Accurate total spend
-  const accurateTotal = validTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-  const sixthInsight = `- You made total ${validTransactions.length} transactions.`;
+  // Insight 6
+  const insight6 = `- You made total ${validTransactions.length} transactions.`;
+
+  // Insight 7: Peak category spend value
+  const insight7 = `- You spent the most in ${topCategoryData.name} with ₹${topCategoryData.actualValue.toLocaleString()}.`;
+
+  // Insight 8: Average spend per day
+  const totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24) + 1;
+  const avgPerDay = Math.round(total / totalDays);
+  const insight8 = `- Your average daily spend is ₹${avgPerDay.toLocaleString()}.`;
+
+  // Insight 9: Month-on-month growth
+  const months = Object.values(filledTotals);
+  let growth = "N/A";
+  if (months.length >= 2) {
+    const last = months[months.length - 1];
+    const prev = months[months.length - 2];
+    if (prev > 0) {
+      growth = (((last - prev) / prev) * 100).toFixed(1) + "%";
+    }
+  }
+  const insight9 = `- Your last period spending changed by ${growth} compared to the previous.`;
+
+  // Insight 10: Average spend per category
+  const avgPerCategory = (total / Object.keys(categoryTotals).length).toFixed(0);
+  const insight10 = `- On average, you spend ₹${avgPerCategory} per category.`;
+
+  // ----- EXTRA INSIGHTS 11-20 (added) -----
+
+  // Insight 11: Median spend per transaction
+  const medianSpend = (() => {
+    if (validTransactions.length === 0) return 0;
+    const sorted = validTransactions.map((t) => t.amount).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 !== 0 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+  })();
+  const insight11 = `- Median spend per transaction is ₹${medianSpend.toLocaleString()}.`;
+
+  // Insight 12: Largest single transaction
+  const largestTxn = validTransactions.length
+    ? validTransactions.reduce((max, t) => (t.amount > max.amount ? t : max), validTransactions[0])
+    : { amount: 0, date: null };
+  let largestTxnDate = "";
+  if (largestTxn && largestTxn.date) {
+    const d = parseDateSafely(largestTxn.date);
+    largestTxnDate = `${d.getDate()} ${d.toLocaleString("default", { month: "short" })}`;
+  }
+  const insight12 = `- Your largest single transaction was ₹${largestTxn.amount.toLocaleString()}${largestTxnDate ? ` on ${largestTxnDate}` : ""}.`;
+
+  // Insight 13: Smallest single transaction
+  const smallestTxn = validTransactions.length
+    ? validTransactions.reduce((min, t) => (t.amount < min.amount ? t : min), validTransactions[0])
+    : { amount: 0, date: null };
+  let smallestTxnDate = "";
+  if (smallestTxn && smallestTxn.date) {
+    const d = parseDateSafely(smallestTxn.date);
+    smallestTxnDate = `${d.getDate()} ${d.toLocaleString("default", { month: "short" })}`;
+  }
+  const insight13 = `- Your smallest transaction was ₹${smallestTxn.amount.toLocaleString()}${smallestTxnDate ? ` on ${smallestTxnDate}` : ""}.`;
+
+  // Insight 14: Weekend vs Weekday spend
+  const weekendSpend = validTransactions
+    .filter((t) => {
+      const day = parseDateSafely(t.date).getDay();
+      return day === 0 || day === 6;
+    })
+    .reduce((sum, t) => sum + t.amount, 0);
+  const weekdaySpend = total - weekendSpend;
+  const insight14 = `- Weekend vs weekday spend: ₹${weekendSpend.toLocaleString()} vs ₹${weekdaySpend.toLocaleString()}.`;
+
+  // Insight 15: Average weekly spend
+  const avgPerWeek = Math.round(total / (totalDays / 7 || 1));
+  const insight15 = `- Weekly average spend is ₹${avgPerWeek.toLocaleString()}.`;
+
+  // Insight 16: Busiest day (most transactions)
+  const busiestDayCountMap = validTransactions.reduce((acc, t) => {
+    const dayName = parseDateSafely(t.date).toLocaleDateString("default", { weekday: "long" });
+    acc[dayName] = (acc[dayName] || 0) + 1;
+    return acc;
+  }, {});
+  const busiestDayEntry = Object.entries(busiestDayCountMap).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0];
+  const insight16 = `- You made the most transactions on ${busiestDayEntry[0]} (${busiestDayEntry[1]} transactions).`;
+
+  // Insight 17: Category diversity
+  const uniqueCategories = Object.keys(categoryTotals).length;
+  const insight17 = `- You spent across ${uniqueCategories} different categories.`;
+
+  // Insight 18: Average transactions per day
+  const avgTransactionPerDay = (validTransactions.length / (totalDays || 1)).toFixed(2);
+  const insight18 = `- You made on average ${avgTransactionPerDay} transactions per day.`;
+
+  // Insight 19: Standard deviation of transaction amounts
+  const spendStdDev = (() => {
+    if (validTransactions.length === 0) return 0;
+    const mean = total / validTransactions.length;
+    const variance =
+      validTransactions.reduce((sum, t) => sum + Math.pow(t.amount - mean, 2), 0) / validTransactions.length;
+    return Math.round(Math.sqrt(variance));
+  })();
+  const insight19 = `- Standard deviation of transactions: ₹${spendStdDev}.`;
+
+  // Insight 20: Top 3 categories share
+  const top3Categories = [...adjustedPieData].sort((a, b) => b.displayValue - a.displayValue).slice(0, 3);
+  const top3Share = totalDisplayed ? ((top3Categories.reduce((s, c) => s + c.displayValue, 0) / totalDisplayed) * 100).toFixed(0) : 0;
+  const insight20 = `- Your top 3 categories account for ${top3Share}% of spending.`;
 
   return (
     <div className="flex flex-col md:flex-row justify-center items-center gap-6">
@@ -278,7 +378,7 @@ function Charts({ transactions }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Bar Chart */}
+      {/* Bar Chart + Insights */}
       <div className="bg-white shadow-lg rounded-xl p-6 w-full md:w-1/2">
         <h3 className="text-lg font-semibold text-gray-700 text-center mb-4">
           Spending by {granularity === "day" ? "Day" : granularity === "week" ? "Week" : "Month"}
@@ -294,12 +394,28 @@ function Charts({ transactions }) {
           </BarChart>
         </ResponsiveContainer>
         <h3>Key Insights</h3>
-        <p className="text-center mt-4 font-semibold text-gray-600">{insight}</p>
-        <p className="text-center mt-2 font-semibold text-gray-600">{secondInsight}</p>
-        <p className="text-center mt-2 font-semibold text-gray-600">{thirdInsight}</p>
-        <p className="text-center mt-2 font-semibold text-gray-600">{fourthInsight}</p>
-        <p className="text-center mt-2 font-semibold text-gray-600">{fifthInsight}</p>
-        <p className="text-center mt-2 font-semibold text-gray-600">{sixthInsight}</p>
+        <p className="text-center mt-4 font-semibold text-gray-600">{insight1}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight2}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight3}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight4}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight5}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight6}</p>
+
+        {/* Newly added insights (7-20) */}
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight7}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight8}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight9}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight10}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight11}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight12}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight13}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight14}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight15}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight16}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight17}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight18}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight19}</p>
+        <p className="text-center mt-2 font-semibold text-gray-600">{insight20}</p>
       </div>
     </div>
   );

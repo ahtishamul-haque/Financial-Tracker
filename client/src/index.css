@@ -90,7 +90,7 @@ button:focus-visible {
 
 /* Table wrapper */
 .table-container {
-  overflow-x: auto; /* allows horizontal scroll on mobile */
+  overflow-x: auto;
   margin-top: 20px;
 }
 

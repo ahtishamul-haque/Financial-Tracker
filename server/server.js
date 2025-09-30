@@ -196,7 +196,7 @@ function detectCategory(vendor) {
   return "Miscellaneous";
 }
 
-// Helper to extract date (walk back a few lines)
+// Helper to extract date
 function extractDate(lines, idx) {
   for (let j = idx; j >= 0; j--) {
     if (/\d{1,2}\s+[A-Za-z]{3}/.test(lines[j])) {
@@ -343,6 +343,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`Server running on port http://localhost:${PORT}`)
 );
+
 
 
 
